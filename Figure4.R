@@ -46,53 +46,48 @@ CorrEquiSpaced <- function(K,alpha=1e-15){
               Prob=p,Thresholds=thresholds,
               Dx=Dx))
 }
-N <- 1e5
-K <- 5
-R <- CorrEquiSpaced(K=K)
-f <- function(s){
+N <- 1e6
+
+f <- function(k,v){
+  s <- 1/sqrt(v)
+  R <- CorrEquiSpaced(K=k)
   l <- rnorm(N)
   g <- cut(l,breaks = c(-Inf,R$Thresholds,+Inf) * s,include.lowest = T)
   g <- as.numeric(g)
   r <- cor(l,g)
-  p <- (mean(g==1) + mean(g==K))/2
-  return(c(r=r,p=p))
+  p <- (mean(g==1) + mean(g==k))/2
+  return(c(rObs=r,rExp=R$maxCorr,RObs=p,RExp=R$Prob[1]))
 }
 
-us <- sqrt(seq(1,2,by=0.1)) #seq(0.1,10,by=0.1)
-ss <- rep(us,each=100)
-fs <- do.call("rbind",lapply(ss,f))
-rs <- aggregate(fs[,"r"]~ss,FUN=mean)
-ps <- aggregate(fs[,"p"]~ss,FUN=mean)
+ks <- 2:15
+f1 <- do.call("rbind",lapply(ks, function(k) f(k,v=0.75)))
+f2 <- do.call("rbind",lapply(ks, function(k) f(k,v=0.50)))
 
-plot(rs[,1],rs[,2],pch=19,type='l',lwd=2)
-abline(h=R$maxCorr,col=2,lty=2)
-abline(v=1,col=4,lty=4)
+Cols <- c("coral1","dodgerblue","goldenrod")
 
-## Loss of information
-R_k      <- rs[,2]
-png("Figure4.png",width=2000,height=1500,res=200)
-par(mar=c(5,6,3,2))
-plot(c(0.3,1),c(0,05),ylim=c(0,0.05),axes=FALSE,type="n",
-     xlab="Ratio of Observed / Expected proportion of grants in extreme categories\n[Values towards the left mean that assessors less likely to rank in extreme categories ]",
-     ylab="Loss of information in ranking grants\n( L(m,k,s) in Equation [3] )")
-axis(1,at=seq(0.3,1,by=0.1))
-axis(2,at=seq(0.,.05,by=0.01))
-abline(h=0.02,col="grey",lty=5)
-vs <- c(0.1,0.90)
-Cols <- c("coral1","dodgerblue","goldenrod","seagreen3")
-for(i in 1:length(vs)){
-  v <- vs[i]
-  lambda_u <- (1-v)/v
-  lambda_v <- (1-(R_k^2)*v)/((R_k^2)*v)
-  Loss     <- do.call("cbind",lapply(3:6,function(m) 1-sqrt( (m + lambda_u) / (m + lambda_v) ) ))
-  matlines(ps[,2] / R$Prob[1],Loss,pch=19,type="l",lwd=2,col=Cols[i],lty=1:4)
-}
-
-legend(0.3,0.005,legend=paste0("m=",3:6),title="Number of assessors",
-       lty=1:4,col=1,box.lty=0,lwd=2,horiz = TRUE)
-legend(0.8,0.050,legend=paste0("s=",vs),
-       title="Proportion (s) of variance in scores\nexplained by grant quality",
-       fill=Cols[1:length(vs)],border=0,box.lty=0)
+png("Figure4_v2.png",width=2000,height=1500,res=200)
+par(mar=c(5,5,3,2))
+matplot(ks,cbind(f1[,c("rExp","rObs")],f2[,"rObs"]),type="l",lwd=3,
+        axes=FALSE,cex.lab=1.2,lty=1:3,
+        xlab="Number of categories (k)",col=Cols,ylim=c(0.8,1),
+        ylab=expression(paste("Correlation between continuous and categorical score (",R[k],")")))
+axis(1,at=ks)
+axis(2)
+abline(h=c(0.95,0.99),col="grey")
+legend(9,0.9,title="Variance of the distribution\nunderlying scores",
+       legend=c(expression(sigma[s]^2==1.00),
+                expression(sigma[s]^2==0.75),
+                expression(sigma[s]^2==0.50)),
+       box.lty=0,col=Cols,lty=1:3,cex=1.2)
 dev.off()
 
-
+## proportions
+v <- 0.5
+k <- 5
+s <- 1/sqrt(v)
+R <- CorrEquiSpaced(K=k)
+l <- rnorm(N)
+g <- cut(l,breaks = c(-Inf,R$Thresholds,+Inf) * s,include.lowest = T)
+g <- as.numeric(g)
+tb<-table(g)
+round(100*tb/N,1)
