@@ -47,11 +47,11 @@ CorrEquiSpaced <- function(K,alpha=1e-15){
               Dx=Dx))
 }
 N <- 1e6
-
+UniProb <- seq(1/N,1-1/N,by=1/N)
 f <- function(k,v){
   s <- 1/sqrt(v)
   R <- CorrEquiSpaced(K=k)
-  l <- rnorm(N)
+  l <- qnorm(UniProb)#rnorm(N)
   g <- cut(l,breaks = c(-Inf,R$Thresholds,+Inf) * s,include.lowest = T)
   g <- as.numeric(g)
   r <- cor(l,g)
@@ -65,7 +65,7 @@ f2 <- do.call("rbind",lapply(ks, function(k) f(k,v=0.50)))
 
 Cols <- c("coral1","dodgerblue","goldenrod")
 
-png("Figure4_v2.png",width=2000,height=1500,res=200)
+png("Figure4_v3.png",width=2000,height=1500,res=200)
 par(mar=c(5,5,3,2))
 matplot(ks,cbind(f1[,c("rExp","rObs")],f2[,"rObs"]),type="l",lwd=3,
         axes=FALSE,cex.lab=1.2,lty=1:3,
@@ -86,7 +86,7 @@ v <- 0.5
 k <- 5
 s <- 1/sqrt(v)
 R <- CorrEquiSpaced(K=k)
-l <- rnorm(N)
+l <- qnorm(UniProb)#rnorm(N)
 g <- cut(l,breaks = c(-Inf,R$Thresholds,+Inf) * s,include.lowest = T)
 g <- as.numeric(g)
 tb<-table(g)
