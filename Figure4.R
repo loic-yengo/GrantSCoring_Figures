@@ -59,7 +59,7 @@ f <- function(k,v){
   return(c(rObs=r,rExp=R$maxCorr,RObs=p,RExp=R$Prob[1]))
 }
 
-ks <- 2:15
+ks <- 2:10
 f1 <- do.call("rbind",lapply(ks, function(k) f(k,v=0.75)))
 f2 <- do.call("rbind",lapply(ks, function(k) f(k,v=0.50)))
 
