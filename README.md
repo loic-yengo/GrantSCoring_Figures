@@ -7,3 +7,6 @@ Visscher & Yengo (2023), "The effect of the scale of grant scoring on ranking ac
 -- Figure2.R : Uses CorrEquiSpaced.R to reproduce Figure 2.
 -- Figure3.R : Uses CorrEquiSpaced.R to reproduce Figure 3.
 -- Figure4.R : Uses CorrEquiSpaced.R to reproduce Figure 4.
+
+Legends of each Figure is given README.txt.
+
